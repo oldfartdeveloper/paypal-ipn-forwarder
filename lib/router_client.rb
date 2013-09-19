@@ -1,9 +1,8 @@
 require_relative 'load_config'
 class RouterClient
 
-  def initialize(test=nil)
-    LoadConfig.set_test_mode(test)
-    @config = LoadConfig.new
+  def initialize(is_test_mode=false)
+    @config = LoadConfig.new(is_test_mode)
     @server_url = @config.server_url
     @server_url += 'test'
     @final_destination_url = @config.final_destination_url

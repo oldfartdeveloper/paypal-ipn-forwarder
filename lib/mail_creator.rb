@@ -2,9 +2,8 @@ require_relative 'load_config'
 
 class MailCreator
 
-  def initialize(test=nil)
-    LoadConfig.set_test_mode(!test.nil?)
-    content = LoadConfig.new
+  def initialize(is_test_mode=false)
+    content = LoadConfig.new(is_test_mode)
     @config = content.mail_creator
   end
   def create(mail)

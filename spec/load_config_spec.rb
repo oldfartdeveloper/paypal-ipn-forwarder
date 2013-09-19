@@ -3,11 +3,8 @@ require_relative '../lib/load_config'
 
 describe LoadConfig do
 
-  TEST_MODE_ON = true
-
   before(:each) do
-    LoadConfig.set_test_mode(TEST_MODE_ON)
-    @config = LoadConfig.new
+    @config = LoadConfig.new(LoadConfig::SET_TEST_MODE)
   end
 
   it 'retrieves the server URL' do
@@ -16,7 +13,7 @@ describe LoadConfig do
 
 
   it 'retrieves the developer computer URL for the router to send IPNs to' do
-    @config.final_destination_url.should == 'http://localhost:3000/payments/ipn'
+    @config.development_computer_url.should == 'http://localhost:3000/payments/ipn'
   end
 
   it 'retrieves the number of seconds between polls' do

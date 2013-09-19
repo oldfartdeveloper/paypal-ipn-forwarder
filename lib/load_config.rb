@@ -2,8 +2,10 @@ require 'yaml'
 
 class LoadConfig
 
-  def initialize
-    dev_version = @@test_mode ? '_test' : ''
+  SET_TEST_MODE = true
+
+  def initialize(is_test_mode=false)
+    dev_version = is_test_mode ? '_test' : ''
     @config = YAML::load_file(File.expand_path("../../config#{dev_version}.yml", __FILE__))
   end
 
@@ -19,8 +21,8 @@ class LoadConfig
     @config['server_url']
   end
 
-  def final_destination_url
-    @config['target_url']
+  def development_computer_url
+    @config['development_computer_url']
   end
 
   def mail_creator
