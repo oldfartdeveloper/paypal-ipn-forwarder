@@ -1,21 +1,20 @@
 require 'timecop'
 require_relative 'spec_helper'
-require_relative '../lib/poller'
-require_relative '../lib/router'
-require_relative '../lib/load_config'
+require_relative '../lib/paypal-ipn-forwarder/poller'
+require_relative '../lib/paypal-ipn-forwarder/router'
+require_relative '../lib/paypal-ipn-forwarder/load_config'
 
-describe Poller do
+describe PaypalIpnForwarder::Poller do
 
   TEST_MODE_ON = true
 
   before(:each) do
-    @router = Router.new(nil, TEST_MODE_ON)
-    LoadConfig.set_test_mode(true)
-    content = LoadConfig.new
+    @router = PaypalIpnForwarder::Router.new(nil)
+    content = PaypalIpnForwarder::LoadConfig.new(TEST_MODE_ON)
     @sandbox_id = 'my_sandbox_id'
     @url = content.server_url
     @router.sandbox_id=(@sandbox_id)
-    @poller = Poller.new(@router, @url)
+    @poller = PaypalIpnForwarder::Poller.new(@router, @url)
     @time_before_no_ipn_notification = content.no_ipn_time_before_notification
   end
 
