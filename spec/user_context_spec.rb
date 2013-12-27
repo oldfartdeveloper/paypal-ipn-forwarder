@@ -13,9 +13,7 @@ describe 'UserContext' do
 
   it 'should load a file from YAML into OpenStruct' do
     begin
-      my_array = Psych.load_file('user_context.yml')
-      my_array.length.should == 2
-      my_contexts = my_array.map { |hash| UserContext.new(@server, hash, TEST_MODE_ON) }
+      my_contexts = from_config
       my_contexts.length.should == 2
       c1 = my_contexts.first
       c1.paypal_id.should == 'my_sandbox_id'
