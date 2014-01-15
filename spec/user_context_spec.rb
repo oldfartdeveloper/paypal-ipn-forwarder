@@ -12,21 +12,17 @@ describe 'UserContext' do
   end
 
   it 'should load a file from YAML into OpenStruct' do
-    begin
-      my_contexts = from_config
-      my_contexts.length.should == 2
-      c1 = my_contexts.first
-      c1.paypal_id.should == 'my_sandbox_id'
-      c1.email.should ==     'developer.gmail.com'
-      c1.testing.should == false
-      c1.queue_map.should be_a_kind_of(Hash)
-      c1.last_poll_time.should be nil
-      c1.poll_checker.should be_a_kind_of(ServerPollChecker)
-      c1.ipn_reception_checker.should be_a_kind_of(ServerIpnReceptionChecker)
-    rescue Psych::SyntaxError => ex
-      puts 'exception file: ' + ex.file
-      puts 'message: ' + ex.message
-    end
+    my_contexts = from_config
+    my_contexts.length.should == 2
+    puts my_contexts.inspect
+    c1 = my_contexts['my_sandbox_id']
+    c1.paypal_id.should == 'my_sandbox_id'
+    c1.email.should == 'developer.gmail.com'
+    c1.testing.should == false
+    c1.queue_map.should be_a_kind_of(Hash)
+    c1.last_poll_time.should be nil
+    c1.poll_checker.should be_a_kind_of(ServerPollChecker)
+    c1.ipn_reception_checker.should be_a_kind_of(ServerIpnReceptionChecker)
   end
 
 end

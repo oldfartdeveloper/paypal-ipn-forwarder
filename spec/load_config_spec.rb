@@ -36,7 +36,7 @@ describe LoadConfig do
     @config.computer_testing.should == { 'my_sandbox_id' => false, 'my_sandbox_id_1' => false }
   end
 
-  it 'retrieves the queue map for the server' do
+  it 'retrieves the queues for the server' do
     @config.queue_map.should == { 'my_sandbox_id' => nil, 'my_sandbox_id_1' => nil }
   end
 

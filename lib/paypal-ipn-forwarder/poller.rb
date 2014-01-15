@@ -52,13 +52,14 @@ module PaypalIpnForwarder
         verify_ipn_received
       end
       Process.detach(@process_id)
-      File.write(Poller::PROCESS_FILE_NAME, @process_id, nil, nil)
+      # File.write(Poller::PROCESS_FILE_NAME, @process_id, nil, nil)
     end
 
     def verify_ipn_received(time=5.0)
+      past_time = @time_polling_started + @time_before_notification_of_no_ipn
       loop do
         sleep time
-        if (Time.now <=> @time_polling_started + @time_before_notification_of_no_ipn) == 1
+        if (Time.now >= past_time)
           puts 'an IPN has still not been received, 10 minutes after testing'
           @notified = true
           @ipn_received = true

@@ -8,16 +8,22 @@ module PaypalIpnForwarder
     end
 
     def computer_testing(params_parsed)
-      id = params_parsed['sandbox_id']
-      if params_parsed['test_mode'] == 'on'
-        if !@server.computer_online?(id)
-          @server.begin_test_mode(id, params_parsed)
-        elsif @server.same_sandbox_being_tested_twice?(id, params_parsed)
-          @server.send_conflict_email(id, params_parsed['email'])
-          @server.cancel_test_mode(id)
+      sandbox_id = params_parsed['sandbox_id']
+      case params_parsed['test_mode']
+      when 'on'
+        unless @server.computer_online?(sandbox_id)
+          @server.begin_test_mode(sandbox_id, params_parsed)
+        else
+          email = params_parsed['email']
+          if @server.two_users_hitting_same_sandbox?(sandbox_id, email)
+            @server.send_conflict_email(sandbox_id, email)
+            @server.cancel_test_mode(sandbox_id)
+          end
         end
-      elsif params_parsed['test_mode'] == 'off'
-        @server.cancel_test_mode(id)
+      when 'off'
+        @server.cancel_test_mode(sandbox_id)
+      else
+        # TODO: what to do when test_mode is neither 'on' nor 'off'
       end
     end
 

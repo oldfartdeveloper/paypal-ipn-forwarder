@@ -7,14 +7,16 @@ module PaypalIpnForwarder
 
   TEST_MODE_ON = true
 
+  YAML_FILE = 'user_context.yml'
+
   # Load the test user configuration from a YAML file.
   # This is used only for regression testing.
   #
-  # @return [Array] an array of user configurations
+  # @return [Hash] a hash of user configurations key'd by the paypal sandbox ID
   def from_config
-    my_array = Psych.load_file('user_context.yml')
-    my_array.length.should == 2
-    my_array.map { |hash| UserContext.new(@server, hash, TEST_MODE_ON) }
+    hashes = Psych.load_file(YAML_FILE)
+    hashes.keys.each { |key| hashes[key] = UserContext.new(@server, hashes[key], TEST_MODE_ON) }
+    hashes
   end
 
 end

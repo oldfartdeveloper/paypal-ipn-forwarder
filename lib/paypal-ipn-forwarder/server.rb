@@ -3,6 +3,7 @@ require 'yaml'
 require 'awesome_print'
 
 require_relative 'ipn'
+require_relative 'user_context'
 require_relative 'load_config'
 require_relative 'mail_sender'
 require_relative 'server_poll_checker'
@@ -19,8 +20,12 @@ module PaypalIpnForwarder
 
     attr_reader :developers_email
 
+    # Testing can overwrite user_contexts w/ a hash of them.
+    attr_writer :user_contexts
+
     def initialize(is_load_test_config=false)
       content                         = LoadConfig.new(is_load_test_config)
+      @user_contexts = {}
 #      @computers_testing              = content.computer_testing.clone
 #      @queue_map                      = content.queue_map.clone
 #      @email_map                      = content.email_map.clone
@@ -28,9 +33,6 @@ module PaypalIpnForwarder
       @developers_email               = content.developers_email
       @is_load_test_config            = is_load_test_config
 #      @ipn_reception_checker_instance = Hash.new
-      if @is_load_test_config
-
-      end
     end
 
     # param [Ipn] ipn the PayPal representation of the IPN
@@ -46,40 +48,36 @@ module PaypalIpnForwarder
     end
 
     def computer_online?(id)
-      @computers_testing[id]
+      @user_contexts.include?(id)
     end
 
-    def begin_test_mode(id, params)
-      @computers_testing[id] = true
-      @queue_map[id]         = Queue.new
-      email_mapper(id, params['email'])
+    def begin_test_mode(sandbox_id, params)
+      uc = UserContext.new(self, params)
+      @user_contexts[sandbox_id] = uc
+      uc.record_poll_time
 
-      #the following line is needed in case the sandbox is a new one.
-      @poll_checker_instance[id] = ServerPollChecker.new(self) if @poll_checker_instance[id].nil?
-      @poll_checker_instance[id].record_poll_time(id)
+      # TODO: Law of Demeter violation here?
+      uc.ipn_reception_checker.check_ipn_received
 
-      @ipn_reception_checker_instance[id] = ServerIpnReceptionChecker.new(self, id)
-
-      @ipn_reception_checker_instance[id].check_ipn_received
       @process_id = fork do
 
         Signal.trap('HUP') do
-          @poll_checker_instance[id].loop_boolean = false
+          uc.poll_checker.loop_boolean = false
         end
 
-        @poll_checker_instance[id].check_testing_polls_occurring(id)
+        uc.poll_checker.check_testing_polls_occurring(sandbox_id)
       end
-
-      File.write(POLL_CHECKER_PROCESS_ID+'_'+id, @process_id, nil, nil)
       Process.detach(@process_id)
     end
 
-    def cancel_test_mode(developer_id)
-      @computers_testing[developer_id] = false
-      @queue_map[developer_id]         = nil
-      kill_process_for_filename(PROCESS_ID_IPN_CHECKER+'_'+developer_id)
-      kill_pid_from_filename(POLL_CHECKER_PROCESS_ID+'_'+developer_id)
-      @ipn_reception_checker_instance[developer_id] = nil
+    def cancel_test_mode(sandbox_id)
+      puts "******** sandbox_id: #{sandbox_id}"
+      ap @user_contexts
+      uc = @user_contexts[sandbox_id]
+      uc.queue_map = nil
+      kill_process_for_filename(PROCESS_ID_IPN_CHECKER+'_'+sandbox_id)
+      kill_pid_from_filename(POLL_CHECKER_PROCESS_ID+'_'+sandbox_id)
+      uc.ipn_reception_checker = nil
     end
 
     def kill_pid_from_filename(filename)
@@ -96,8 +94,8 @@ module PaypalIpnForwarder
       File.exist?(filename) ? File.read(filename).to_i : nil
     end
 
-    def same_sandbox_being_tested_twice?(id, params)
-      params['email'] != @email_map[id]
+    def two_users_hitting_same_sandbox?(id, email)
+      email != @user_contexts[id].email
     end
 
     def send_conflict_email(paypal_id, email)
@@ -118,12 +116,8 @@ module PaypalIpnForwarder
     The other user of the sandbox was #{email}"
     end
 
-    def email_mapper(id, email)
-      @email_map[id] = email
-    end
-
     def queue_identify(paypal_id, queue_action)
-      queue = @queue_map[paypal_id]
+      queue = @user_contexts[paypal_id].queue
       if queue.nil?
         email_no_queue(queue_action, paypal_id)
       end
@@ -157,7 +151,7 @@ module PaypalIpnForwarder
 
     #if the queue does not exist(due to sandbox not being in test mode), then the size of the queue will be 0
     def queue_size(paypal_id)
-      queue = @queue_map[paypal_id]
+      queue = @user_contexts[paypal_id].queue
       (queue.nil?) ? 0 : queue.size
     end
 

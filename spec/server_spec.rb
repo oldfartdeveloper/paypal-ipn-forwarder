@@ -32,7 +32,10 @@ describe Server do
 
     it 'is responded to with an IPN when one is present' do
       begin
-        @server.begin_test_mode(@sandbox_id, { 'sandbox_id' => @sandbox_id, 'test_mode' => 'on', 'email' => 'bob@example.com' })
+        @server.begin_test_mode(@sandbox_id, { 'sandbox_id' => @sandbox_id,
+                                               'test_mode' => 'on',
+                                               'email' => 'bob@example.com'
+        })
         @server.receive_ipn(@ipn)
         @server.ipn_present?(@ipn.paypal_id).should == true
         @server.send_ipn_if_present(@ipn.paypal_id).should == @ipn

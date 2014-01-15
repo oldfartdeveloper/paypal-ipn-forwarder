@@ -9,8 +9,6 @@ no_polling_time_before_email : 3600
 
 no_ipn_time_before_email : 600
 
-sandbox_id : ['my_sandbox_id','my_sandbox_id_1']
-
 #developers_email : 'developers@hedgeye.com'
 developers_email : 'ssmith@hedgeye.com'
 

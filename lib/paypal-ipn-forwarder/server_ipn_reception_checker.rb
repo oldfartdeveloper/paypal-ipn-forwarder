@@ -5,8 +5,6 @@ require_relative 'mail_sender'
 module PaypalIpnForwarder
   class ServerIpnReceptionChecker
 
-    PROCESS_ID_IPN_CHECKER = '.process_id_for_ipn_checker'
-
     def initialize(server, paypal_id, is_test_mode=false)
       @content = LoadConfig.new(is_test_mode)
       @server = server
@@ -28,7 +26,7 @@ module PaypalIpnForwarder
 
       end
       Process.detach(@process_id)
-      File.write(PROCESS_ID_IPN_CHECKER + '_' + @paypal_id, @process_id, nil, nil)
+      #File.write(Server::PROCESS_ID_IPN_CHECKER + '_' + @paypal_id, @process_id, nil, nil)
     end
 
     def verify_ipn_received(time=1.0)
