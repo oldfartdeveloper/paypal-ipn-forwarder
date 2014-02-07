@@ -8,7 +8,7 @@ describe Server do
 
   before(:each) do
     @server = Server.new(TEST_MODE_ON)
-    @server.begin_test_mode('my_sandbox_id', { 'my_sandbox_id' => 'my_sandbox_id', 'test_mode' => 'on', '@email' => 'bob@example.com' })
+    @server.begin_test_mode('my_sandbox_id', { 'paypal_id' => 'my_sandbox_id', 'email' => 'bob@example.com' })
   end
 
   after do

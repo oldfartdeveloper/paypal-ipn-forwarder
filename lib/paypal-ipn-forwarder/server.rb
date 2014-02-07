@@ -52,7 +52,7 @@ module PaypalIpnForwarder
     end
 
     def begin_test_mode(sandbox_id, params)
-      uc = UserContext.new(self, params)
+      uc = UserContext.new(self, params, @is_load_test_config)
       @user_contexts[sandbox_id] = uc
       uc.record_poll_time
 
@@ -65,16 +65,15 @@ module PaypalIpnForwarder
           uc.poll_checker.loop_boolean = false
         end
 
-        uc.poll_checker.check_testing_polls_occurring(sandbox_id)
+        uc.poll_checker.check_testing_polls_occurring
       end
       Process.detach(@process_id)
     end
 
     def cancel_test_mode(sandbox_id)
-      puts "******** sandbox_id: #{sandbox_id}"
-      ap @user_contexts
+      #ap @user_contexts
       uc = @user_contexts[sandbox_id]
-      uc.queue_map = nil
+      uc.queue = nil
       kill_process_for_filename(PROCESS_ID_IPN_CHECKER+'_'+sandbox_id)
       kill_pid_from_filename(POLL_CHECKER_PROCESS_ID+'_'+sandbox_id)
       uc.ipn_reception_checker = nil

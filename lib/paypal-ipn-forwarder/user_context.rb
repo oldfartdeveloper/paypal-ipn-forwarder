@@ -19,7 +19,7 @@ module PaypalIpnForwarder
         self.send((k.to_s + '=').to_sym, v)
       end
       self.queue = []
-      self.poll_checker = ServerPollChecker.new(server, test_mode)
+      self.poll_checker = ServerPollChecker.new(server, self, test_mode)
       self.ipn_reception_checker = ServerIpnReceptionChecker.new(@server, self.paypal_id, test_mode)
     end
 
